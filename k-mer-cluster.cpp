@@ -92,7 +92,7 @@ void HierarchicalClustering(vector<Cluster>& clusters,
             double d = GetDistance(clusters[k1].cluster_ids[p],
                                    clusters[j].cluster_ids[q], pairwise_dis);
             if (d > max_dis) {
-              d = max_dis;
+              max_dis = d;
             }
           }
         }
