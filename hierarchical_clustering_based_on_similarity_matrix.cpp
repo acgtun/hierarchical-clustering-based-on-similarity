@@ -5,39 +5,43 @@ using std::string;
 
 namespace clustering {
 
-void HierarchicalClusteringBasedonSimilarityMatrix::GetDigits(
-    const size_t& num, vector<size_t>& digits) {
-  size_t n = num;
-  size_t i = 0;
-  while (n) {
-    digits[i++] = n % ALPHABETSIZE;
-    n /= ALPHABETSIZE;
-  }
-  while (i < KMER) {
-    digits[i++] = 0;
+void HierarchicalClusteringBasedonSimilarityMatrix::BuildID2Kmer() {
+  for (size_t i = 0; i < num_of_points; ++i) {
+    string kmer;
+    size_t n = i;
+    size_t j = 0;
+    while (n) {
+      kmer += 48 + n % ALPHABETSIZE;
+      j++;
+      n /= ALPHABETSIZE;
+    }
+    while (j < KMER) {
+      kmer += 48;
+      j++;
+    }
+    id_kmer.insert(make_pair(i, kmer));
+    cout << i << " " << kmer << endl;
   }
 }
 
-double HierarchicalClusteringBasedonSimilarityMatrix::GetDistance(
+double HierarchicalClusteringBasedonSimilarityMatrix::KmerSimilarityScore(
     const size_t& a, const size_t& b) {
-  vector < size_t > av(KMER);
-  vector < size_t > bv(KMER);
-  GetDigits(a, av);
-  GetDigits(b, bv);
+  string sa = id_kmer[a];
+  string sb = id_kmer[b];
 
-  double dis = 0.0;
+  double sim = 0.0;
   for (size_t i = 0; i < KMER; i++) {
-    dis += pairwise_sim[av[i]][bv[i]];
+    sim += pairwise_sim[sa[i] - 48][sb[i] - 48];
   }
-  return dis;
+  return sim;
 }
 
-double HierarchicalClusteringBasedonSimilarityMatrix::GetSimilarityScore(
+double HierarchicalClusteringBasedonSimilarityMatrix::ClusterSimilarityScore(
     const Cluster& a, const Cluster& b) {
   double avg = 0.0;
   for (size_t p = 0; p < a.members.size(); p++) {
     for (size_t q = 0; q < b.members.size(); q++) {
-      avg += GetDistance(a.members[p], b.members[q]);
+      avg += KmerSimilarityScore(a.members[p], b.members[q]);
     }
   }
   avg /= (a.members.size() * b.members.size());
@@ -52,21 +56,23 @@ void HierarchicalClusteringBasedonSimilarityMatrix::HierarchicalClustering() {
     double max_sim = std::numeric_limits<int>::min();
     size_t k1 = 0, k2 = 0;
     for (size_t i = 0; i < r; i++) {
-      for (size_t j = 0; j < r; j++) {
-        if (i != j && clusters[i].indicator && clusters[j].indicator) {
-          double sim = GetSimilarityScore(clusters[i], clusters[j]);
-          if (sim > max_sim) {
-            max_sim = sim;
-            k1 = i;
-            k2 = j;
-          }
+      if (!clusters[i].indicator)
+        continue;
+      for (size_t j = i + 1; j < r; j++) {
+        if (!clusters[j].indicator)
+          continue;
+        double sim = ClusterSimilarityScore(clusters[i], clusters[j]);
+        if (sim > max_sim) {
+          max_sim = sim;
+          k1 = i;
+          k2 = j;
         }
       }
     }
 
     cout << "Iteration " << t << ": " << clusters[k1].id << " "
         << clusters[k2].id << " "
-        << GetSimilarityScore(clusters[k1], clusters[k2]) << endl;
+        << ClusterSimilarityScore(clusters[k1], clusters[k2]) << endl;
     /*merge k2 to k1*/
     for (size_t j = 0; j < clusters[k2].members.size(); j++) {
       clusters[k1].members.push_back(clusters[k2].members[j]);

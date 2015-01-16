@@ -1,14 +1,18 @@
 #ifndef HIERARCHICALCLUSTERINGBASEDONSIMILARITYMATRIX_H_
 #define HIERARCHICALCLUSTERINGBASEDONSIMILARITYMATRIX_H_
 
+#include <tr1/unordered_map>
 #include <cmath>
 #include <vector>
 #include <limits>
+#include <string>
 #include <iostream>
 
 using std::vector;
+using std::string;
 using std::cout;
 using std::endl;
+using std::tr1::unordered_map;
 
 namespace clustering {
 
@@ -33,6 +37,7 @@ class HierarchicalClusteringBasedonSimilarityMatrix {
  public:
   HierarchicalClusteringBasedonSimilarityMatrix() {
     num_of_points = static_cast<size_t>(pow(ALPHABETSIZE, KMER));
+    BuildID2Kmer();
     clusters.resize(num_of_points);
     for (size_t i = 0; i < num_of_points; ++i) {
       clusters[i].indicator = true;
@@ -47,12 +52,13 @@ class HierarchicalClusteringBasedonSimilarityMatrix {
 
  private:
   void HierarchicalClustering();
-  void GetDigits(const size_t& num, vector<size_t>& digits);
-  double GetDistance(const size_t& a, const size_t& b);
-  double GetSimilarityScore(const Cluster& a, const Cluster& b);
+  void BuildID2Kmer();
+  double KmerSimilarityScore(const size_t& a, const size_t& b);
+  double ClusterSimilarityScore(const Cluster& a, const Cluster& b);
 
   vector<Cluster> clusters;
   size_t num_of_points;
+  unordered_map<size_t, string> id_kmer;
 };
 
 } /* namespace clustering */
