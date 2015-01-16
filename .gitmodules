@@ -1,0 +1,3 @@
+[submodule "src/hierarchical_clustering"]
+	path = src/hierarchical_clustering
+	url = git@github.com:acgtun/Hierarchical_Clustering_Based_on_Similarity_Matrix.git
