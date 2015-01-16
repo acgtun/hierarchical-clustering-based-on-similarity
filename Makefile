@@ -1,20 +1,26 @@
-K-MER-CLUSTERING = $(shell pwd)
+PROGS = k-mer-cluster
 
-all:
-	@make -C src K-MER-CLUSTERING=$(K-MER-CLUSTERING) OPT=1
+CXX = g++
+CFLAGS = -Wall -O3 -fPIC -fmessage-length=50
 
-install:
-	@make -C src K-MER-CLUSTERING=$(K-MER-CLUSTERING) OPT=1 install
+ifeq "$(shell uname)" "Darwin"
+CFLAGS += -arch x86_64
+endif
 
-test:
-	@make -C src K-MER-CLUSTERING=$(K-MER-CLUSTERING) test
-.PHONY: test
+SRC = hierarchical_clustering_based_on_similarity_matrix.cpp
+OBJ = $(patsubst %.cpp,%.o,$(SRC))
+
+all:	$(PROGS)
+
+%.o: %.cpp %.hpp
+	$(CXX) $(CFLAGS) -c -o $@ $< 
+
+k-mer-cluster : $(OBJ) 
+
+%: %.cpp
+		$(CXX) $(CFLAGS) -o $@ $^ 
 
 clean:
-	@make -C src K-MER-CLUSTERING=$(K-MER-CLUSTERING) clean
-.PHONY: clean
+	@-rm -f $(PROGS) *.o *.so *.a *~
 
-distclean: clean
-	@rm -rf $(K-MER-CLUSTERING)/bin
-	@rm -rf $(K-MER-CLUSTERING)/include
-.PHONY: distclean
+.PHONY: clean
