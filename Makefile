@@ -1,18 +1,29 @@
+PROGS = hierarchical_clustering_based_on_similarity_matrix_main
 
-CXX := g++
-CXXFLAGS := -O3 -Wall -fmessage-length=50
+CXX = g++
+CFLAGS = -Wall -O3 -fPIC -fmessage-length=50
 
-SRCS := hierarchical_clustering_based_on_similarity_matrix.cpp 
-OBJS := $(SRCS:.cc=.o)
 
-.cc.o:
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
-	
-hierarchical_clustering_based_on_similarity_matrix: hierarchical_clustering_based_on_similarity_matrix_main.o $(OBJS)
-	 $(CXX) $(CXXFLAGS) -o $@ $^
-                
+ifeq "$(shell uname)" "Darwin"
+CFLAGS += -arch x86_64
+endif
 
-all: hierarchical_clustering_based_on_similarity_matrix
+all:	$(PROGS)
+
+SRC = hierarchical_clustering_based_on_similarity_matrix.cpp
+OBJ = $(patsubst %.cpp,%.o,$(SRC))
+
+%.o: %.cpp %.hpp
+	$(CXX) $(CFLAGS) -c -o $@ $<
+
+hierarchical_clustering_based_on_similarity_matrix_main :  $(OBJ)
+
+
+%: %.cpp
+		$(CXX) $(CFLAGS) -o $@ $^
+
 
 clean:
-	rm -rf hierarchical_clustering_basedon_similarity_matrix  *.exe *.o  
+	@-rm -f $(PROGS) *.o *.so *.a *~
+
+.PHONY: clean
