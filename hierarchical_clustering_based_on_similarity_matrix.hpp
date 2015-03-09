@@ -17,7 +17,7 @@ using std::tr1::unordered_map;
 namespace clustering {
 
 #define ALPHABETSIZE 8
-#define KMER 6
+#define KMER 5
 
 const double pairwise_sim[ALPHABETSIZE][ALPHABETSIZE] = { { 1.88889, -0.8, -1,
     -0.666667, -0.666667, -1.08333, -2.22222, -1 }, { -0.8, 1.52, -0.1, -3.2,
@@ -31,6 +31,7 @@ struct Cluster {
   bool indicator;
   size_t id;
   vector<size_t> members;
+  vector<double> similarity;
 };
 
 class HierarchicalClusteringBasedonSimilarityMatrix {
@@ -43,6 +44,13 @@ class HierarchicalClusteringBasedonSimilarityMatrix {
       clusters[i].indicator = true;
       clusters[i].id = i;
       clusters[i].members.push_back(i);
+    }
+    for (size_t i = 0; i < num_of_points; ++i) {
+      clusters[i].similarity.resize(num_of_points);
+      for (size_t j = 0; j < num_of_points; ++j) {
+        clusters[i].similarity[j] = ClusterSimilarityScore(clusters[i],
+                                                           clusters[j]);
+      }
     }
 
     HierarchicalClustering();
@@ -59,6 +67,7 @@ class HierarchicalClusteringBasedonSimilarityMatrix {
   vector<Cluster> clusters;
   size_t num_of_points;
   unordered_map<size_t, string> id_kmer;
+  vector<vector<double> > similarity_matrix;
 };
 
 } /* namespace clustering */
