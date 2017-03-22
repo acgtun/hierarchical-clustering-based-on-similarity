@@ -1,2 +1,1 @@
-k-mer-clustering
-================
+protein sequence k-mer clustering
